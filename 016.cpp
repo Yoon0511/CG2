@@ -45,14 +45,9 @@ float r = 0;
 float offset = 0.0f;
 float trilncrment = 0.01f;
 void mytimer(int value);
-
-
 GLuint vao[4], vbo[8];
 GLuint s_program;
 float rect_size = RECT_SIZE;
-
-
-
 
 class myRect {
 public:
@@ -62,7 +57,9 @@ public:
 	float glux, gluy, gluz,gluscale_x, gluscale_y,gluscale_z, gluscalebyzero;
 	float gluanglex, gluangley;
 	float movespeed;
-	list <my_Rectpos> list_lines;
+	float prev_x, prev_y,prev_z;
+	bool moving;
+	int move_index;
 
 public:
 	myRect() {
@@ -77,8 +74,11 @@ public:
 		gluz = 0.0f;
 		gluanglex = -30.0;
 		gluangley = -15.0;
-		scale_x = scale_y = scale_z = gluscale_x = gluscale_y = gluscale_z = 1;
+		scale_x = scale_y = scale_z = gluscale_x = gluscale_y = gluscale_z = -0.3;
 		scalebyzero = gluscalebyzero = 1;
+		prev_x = prev_z = prev_y = 0;
+		move_index = 0;
+		moving = false;
 	};
 	GLfloat hexahedronp[108] = {
 		  0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25,	//앞
@@ -245,8 +245,11 @@ public:
 		gluz = 0.0f;
 		gluanglex = -30.0;
 		gluangley = -15.0;
-		scale_x = scale_y = scale_z = gluscale_x = gluscale_y = gluscale_z = 1;
+		scale_x = scale_y = scale_z = gluscale_x = gluscale_y = gluscale_z = -0.3;
 		scalebyzero = gluscalebyzero = 1;
+		prev_x = prev_z = prev_y = 0;
+		move_index = 0;
+		moving = false;
 	}
 
 	void setline()
@@ -294,7 +297,7 @@ public:
 		/*int c = 0;
 		for (int i = 0; i < 7560; ++i)
 		{
-			printf("%f ", move_lines[i]);
+			printf("%d %f ", i,move_lines[i]);
 			c++;
 			if(c == 3)
 			{
@@ -302,6 +305,29 @@ public:
 				printf("\n");
 			}
 		}*/
+	}
+
+	void hex_moving()
+	{
+		if (moving)
+		{
+			prev_x = movex;
+			prev_z = movez;
+			prev_z = movey;
+			//int i = 0;
+			//while (true)
+			//{
+			//	i = i++ % 7558; //7560 - 2
+			//	movex = move_lines[i];
+			//	movez = move_lines[i + 2];
+			//}
+		}
+		else
+		{
+			movex = - movex + prev_x;
+			movez = - movez + prev_z;
+			movey = - movey + prev_y;
+		}
 	}
 };
 
@@ -332,7 +358,7 @@ void main(int argc, char** argv)
 	InitShader();
 	InitBuffer();
 
-	glutTimerFunc(0.01f, mytimer, 0);
+	glutTimerFunc(1.0f, mytimer, 0);
 	glutSpecialFunc(Special);
 	glutKeyboardFunc(Keyboard);
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
@@ -361,12 +387,12 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glBindVertexArray(vao[1]);
 	glDrawArrays(GL_LINES, 0, 6);
 
-	Ty = glm::rotate(Ty, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	Tx = glm::rotate(Tx, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	Ty = glm::rotate(Ty, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tx = glm::rotate(Tx, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = Tx * Ty * moveMatrix;
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	glBindVertexArray(vao[3]);
-	glDrawArrays(GL_LINE_STRIP, 0, 2519);
+	glDrawArrays(GL_LINE_STRIP, 0, 2520);
 
 	//사각형
 	myrect.myrectsetting();
@@ -642,6 +668,10 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'g':
 		myrect.reset();
 		break;
+	case 'r':
+		myrect.moving = !myrect.moving;
+		myrect.hex_moving();
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -669,6 +699,22 @@ GLvoid Special(int key, int x, int y)
 
 void mytimer(int value)
 {
+	if (myrect.moving)
+	{
+		//myrect.move_index = myrect.move_index % 7558; //7560 - 2 , 2520 - 2
+		myrect.movex = myrect.move_lines[myrect.move_index];
+		myrect.movey = 0;
+		myrect.movez = myrect.move_lines[myrect.move_index + 2];
+		myrect.move_index += 3;
+
+		if (myrect.move_index >= 7558)
+		{
+			myrect.move_index = 0;
+		/*	myrect.movex = -myrect.movex;
+			myrect.movey = -myrect.movex;
+			myrect.movez = -myrect.movex;*/
+		}
+	}
 	glutPostRedisplay();
 	glutTimerFunc(1.0f, mytimer, 0);
 }
