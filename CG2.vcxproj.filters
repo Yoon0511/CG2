@@ -36,6 +36,12 @@
     <ClCompile Include="014.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="015.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="016.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.glsl">
