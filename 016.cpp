@@ -313,7 +313,7 @@ public:
 		{
 			prev_x = movex;
 			prev_z = movez;
-			prev_z = movey;
+			prev_y = movey;
 			//int i = 0;
 			//while (true)
 			//{
@@ -324,9 +324,14 @@ public:
 		}
 		else
 		{
-			movex = - movex + prev_x;
-			movez = - movez + prev_z;
-			movey = - movey + prev_y;
+			move_index = 0;
+			movex -= movex;
+			movez -= movez;
+			movey -= movey;
+
+			movex += prev_x;
+			movez += prev_z;
+			movey += prev_y;
 		}
 	}
 };
@@ -387,13 +392,17 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glBindVertexArray(vao[1]);
 	glDrawArrays(GL_LINES, 0, 6);
 
-	Ty = glm::rotate(Ty, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	Tx = glm::rotate(Tx, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = Tx * Ty * moveMatrix;
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	glBindVertexArray(vao[3]);
-	glDrawArrays(GL_LINE_STRIP, 0, 2520);
+	if (myrect.moving) //회오리
+	{
+		Ty = glm::rotate(Ty, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		Tx = glm::rotate(Tx, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = Tx * Ty * moveMatrix;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(vao[3]);
+		glDrawArrays(GL_LINE_STRIP, 0, 2520);
 
+	}
+	
 	//사각형
 	myrect.myrectsetting();
 	myrect.mydraw_hex();
