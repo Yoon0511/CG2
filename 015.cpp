@@ -71,7 +71,7 @@ public:
 			revolution[i] = false;
 		}
 		chage = true;
-		rotatingspeed = 1.5;
+		rotatingspeed = 0.6;
 		glury = 0;
 		ry = 0;
 		xangle = -30.0;
@@ -196,8 +196,8 @@ public:
 		glm::mat4 Rx = glm::mat4(1.0f);
 		Ry = glm::rotate(Ry, glm::radians(ry), glm::vec3(0.0f, 1.0f, 0.0f));
 		Rx = glm::rotate(Rx, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = Rx * Ry;
-		model *= moveMatrix * Tx * Ty;
+		model = Rx * Ry; //공전
+		model *= moveMatrix * Tx * Ty; //자전
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	}

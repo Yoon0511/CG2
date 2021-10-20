@@ -72,8 +72,8 @@ public:
 		glux = 0.5f;
 		gluy = -0.7f;
 		gluz = 0.0f;
-		gluanglex = -30.0;
-		gluangley = -15.0;
+		gluanglex = 10.0;
+		gluangley = -45.0;
 		scale_x = scale_y = scale_z = gluscale_x = gluscale_y = gluscale_z = -0.3;
 		scalebyzero = gluscalebyzero = 1;
 		prev_x = prev_z = prev_y = 0;
@@ -667,12 +667,17 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		myrect.glu_move(myrect.movespeed, 0, 0);
 		break;
 	case 'c':
-		myrect.hex_move(0, 0, myrect.movespeed);
-		myrect.glu_move(0, 0, myrect.movespeed);
+		//myrect.hex_move(0, 0, myrect.movespeed);
+		//myrect.glu_move(0, 0, myrect.movespeed);
+		myrect.hex_move(0, myrect.movespeed,0);
+		myrect.glu_move(0, myrect.movespeed, 0);
+
 		break;
 	case 'v':
-		myrect.hex_move(0, 0, -myrect.movespeed);
-		myrect.glu_move(0, 0, -myrect.movespeed);
+		//myrect.hex_move(0, 0, -myrect.movespeed);
+		//myrect.glu_move(0, 0, -myrect.movespeed);
+		myrect.hex_move(0, -myrect.movespeed, 0);
+		myrect.glu_move(0, -myrect.movespeed, 0);
 		break;
 	case 'g':
 		myrect.reset();
@@ -712,8 +717,11 @@ void mytimer(int value)
 	{
 		//myrect.move_index = myrect.move_index % 7558; //7560 - 2 , 2520 - 2
 		myrect.movex = myrect.move_lines[myrect.move_index];
+		myrect.glux = myrect.move_lines[myrect.move_index];
 		myrect.movey = 0;
+		myrect.gluy = 0;
 		myrect.movez = myrect.move_lines[myrect.move_index + 2];
+		myrect.gluz = myrect.move_lines[myrect.move_index+2];
 		myrect.move_index += 3;
 
 		if (myrect.move_index >= 7558)
@@ -725,5 +733,5 @@ void mytimer(int value)
 		}
 	}
 	glutPostRedisplay();
-	glutTimerFunc(1.0f, mytimer, 0);
+	glutTimerFunc(10.0f, mytimer, 0);
 }
