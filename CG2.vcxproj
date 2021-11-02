@@ -164,7 +164,10 @@
     <ClCompile Include="015.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="016.cpp" />
+    <ClCompile Include="016.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="017.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
