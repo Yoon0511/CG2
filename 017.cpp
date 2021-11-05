@@ -45,7 +45,7 @@ float r = 0;
 float offset = 0.0f;
 float trilncrment = 0.01f;
 void mytimer(int value);
-GLuint vao[4], vbo[8];
+GLuint vao[12], vbo[24];
 GLuint s_program;
 float rect_size = RECT_SIZE;
 
@@ -58,16 +58,17 @@ public:
 	float gluanglex, gluangley;
 	float movespeed;
 	float prev_x, prev_y, prev_z;
-	bool moving;
+	bool moving,depth_test,tri_animation,tri_animation_ing, revolution,hex_up_animation, hex_front_animation, hex_front_animation_ing,hex_slied, hex_slied_ing;
 	int move_index;
-
-	float temp;
+	float tri_angle, revolutiony,hex_up_anglex, hex_front_anglex,hex_slied_y;
+	bool projection, projection_type;
 public:
 	myRect() {
-		temp = 30.0;
+		revolutiony = 0.0f;
+		tri_angle = 0.0f;
 		movespeed = 0.05;
-		xangle = 10.0f;
-		yangle = 5.0f;
+		xangle = -35.0f;
+		yangle = -10.0f;
 		movex = -0.5f;
 		movey = 0.5f;
 		movez = 0.0f;
@@ -81,23 +82,42 @@ public:
 		prev_x = prev_z = prev_y = 0;
 		move_index = 0;
 		moving = false;
+		depth_test = true;
+		tri_animation = false;
+		tri_animation_ing = false;
+		revolution = false;
+		hex_up_anglex = hex_slied_y = 0;
+		hex_up_animation = hex_front_animation = hex_front_animation_ing = hex_slied = hex_slied_ing = false;
 	};
 	GLfloat hexahedronp[108] = {
-		  0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25,	//앞
-		  0.25,0.25,0.0, 0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,0.25,0.0, 0.25,0.25,0.0,	//뒤
-		  0.25,0.25,0.25, 0.25,-0.25,0.25, 0.25,-0.25,0.0, 0.25,-0.25,0.0, 0.25,0.25,0.0, 0.25,0.25,0.25,		//오
-		 -0.25,0.25,0.25, -0.25,0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.25, -0.25,0.25,0.25,	//왼
-		  0.25,0.25,0.25, 0.25,0.25,0.0, -0.25,0.25,0.0, -0.25,0.25,0.0, -0.25,0.25,0.25, 0.25,0.25,0.25,		//위
-		  0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.0, -0.25,-0.25,0.0, 0.25,-0.25,0.0, 0.25,-0.25,0.25	//아래
+		  0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25,		//앞
+		  0.25,0.25,0.0, 0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,0.25,0.0, 0.25,0.25,0.0,			//뒤
+		  0.25,0.25,0.25, 0.25,-0.25,0.25, 0.25,-0.25,0.0, 0.25,-0.25,0.0, 0.25,0.25,0.0, 0.25,0.25,0.25,			//오
+		 -0.25,0.25,0.25, -0.25,0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.0, -0.25,-0.25,0.25, -0.25,0.25,0.25,		//왼
+		  0.25,0.25,0.25, 0.25,0.25,0.0, -0.25,0.25,0.0, -0.25,0.25,0.0, -0.25,0.25,0.25, 0.25,0.25,0.25,			//위
+		  0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.0, -0.25,-0.25,0.0, 0.25,-0.25,0.0, 0.25,-0.25,0.25		//아래
 	};
+	GLfloat hex_front[18] = { 0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25 };		// 앞
+	GLfloat hex_back[18] = { 0.25,0.25,-0.25, 0.25,-0.25,-0.25, -0.25,-0.25,-0.25, -0.25,-0.25,-0.25, -0.25,0.25,-0.25, 0.25,0.25,-0.25 };	// 뒤
+	GLfloat hex_right[18] = { 0.25,0.25,0.25, 0.25,-0.25,0.25, 0.25,-0.25,-0.25, 0.25,-0.25,-0.25, 0.25,0.25,-0.25, 0.25,0.25,0.25 };		// 오
+	GLfloat hex_left[18] = { -0.25,0.25,0.25, -0.25,0.25,-0.25, -0.25,-0.25,-0.25, -0.25,-0.25,-0.25, -0.25,-0.25,0.25, -0.25,0.25,0.25 };	// 왼
+	GLfloat hex_up[18] = { 0.25,0.25,0.25, 0.25,0.25,-0.25, -0.25,0.25,-0.25, -0.25,0.25,-0.25, -0.25,0.25,0.25, 0.25,0.25,0.25 };			// 위
+	GLfloat hex_down[18] = { 0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,-0.25, -0.25,-0.25,-0.25, 0.25,-0.25,-0.25, 0.25,-0.25,0.25 };	// 아래
+
+	GLfloat hex_front_color[18] = { 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0 };		//앞
+	GLfloat hex_back_color[18] = { 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0 };		//뒤
+	GLfloat hex_right_color[18] = { 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0 };		//오
+	GLfloat hex_left_color[18] = { 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0 };		//왼
+	GLfloat hex_up_color[18] = { 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0 };		//위
+	GLfloat hex_down_color[18] = { 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5 };		//아래
 
 	const GLfloat colors[108] = { //--- 삼각형 꼭지점 색상
 		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, //앞
-		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0,//뒤
-		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0,//오
-		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0,//왼
-		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0,//위
-		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0//아래
+		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, //뒤
+		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, //오
+		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, //왼
+		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, //위
+		1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0  //아래
 	};
 
 	/*const GLfloat lines[18] = {
@@ -125,9 +145,23 @@ public:
 
 	GLfloat tri[54] = {
 		-0.3,0.0,0.0, 0.3,0.0,-0.3, -0.3,0.0,-0.3,  -0.3,0.0,0.0, 0.3,0.0,0.0, 0.3,0.0,-0.3, //바닥
-		-0.3,0.0,-0.3, 0.3,0.0,-0.3, 0.0,0.3,0.15,  0.3,0.0,0.0, 0.3,0.0,-0.3, 0.0,0.3,0.15, //뒤 오
-		-0.3,0.0,0.0, 0.3,0.0,0.0, 0.0,0.3,0.15,  -0.3,0.0,0.0, -0.3,0.0,-0.3, 0.0,0.3,0.15, //앞 왼
+		-0.3,0.0,0.0, 0.3,0.0,0.0, 0.0,0.3,0.15,  0.3,0.0,0.0, 0.3,0.0,-0.3, 0.0,0.3,0.15, //뒤 오
+		-0.3,0.0,-0.3, 0.3,0.0,-0.3, 0.0,0.3,0.15,  -0.3,0.0,0.0, -0.3,0.0,-0.3, 0.0,0.3,0.15, //앞 왼
 	};
+
+	GLfloat tri_pos_front[3][3] = { 0.0,0.2,0.0, -0.25,-0.25,0.25, 0.25,-0.25,0.25 };
+	GLfloat tri_pos_back[3][3] = { 0.0,0.2,0.0, 0.25,-0.25,-0.25, -0.25,-0.25,-0.25 };
+	GLfloat tri_pos_right[3][3] = { 0.0,0.2,0.0, 0.25,-0.25,0.25, 0.25,-0.25,-0.25 };
+	GLfloat tri_pos_left[3][3] = { 0.0,0.2,0.0, -0.25,-0.25,-0.25, -0.25,-0.25,0.25 };
+	GLfloat tri_pos_floor[6][3] = { 0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,-0.25,-0.25,-0.25,-0.25,0.25,-0.25,-0.25,0.25,-0.25,0.25 };
+	
+	GLfloat tri_color_front[3][3] = { 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0 };
+	GLfloat tri_color_back[3][3] = { 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0 };
+	GLfloat tri_color_right[3][3] = { 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0 };
+	GLfloat tri_color_left[3][3] = { 1.0,0.5,0.0, 1.0,0.5,0.0, 1.0,0.5,0.0 };
+	GLfloat tri_color_floor[6][3] = { 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0 };
+
+
 
 	GLfloat tri_colors[54] = {
 		0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0,  1.0,0.0,1.0, 1.0,0.0,1.0, 1.0,0.0,1.0,
@@ -181,7 +215,9 @@ public:
 		mytrisetting();
 		glDrawArrays(GL_TRIANGLES, 0, 3); //바닥1
 		glDrawArrays(GL_TRIANGLES, 3, 3); //바닥2
-
+		glDrawArrays(GL_TRIANGLES, 6, 3); //뒤
+		glDrawArrays(GL_TRIANGLES, 9, 3); //오
+		
 		glm::mat4 Tx = glm::mat4(1.0f);
 		glm::mat4 Ty = glm::mat4(1.0f);
 		glm::mat4 moveMatrix = glm::mat4(1.0f);
@@ -189,33 +225,23 @@ public:
 		glm::mat4 scale = glm::mat4(1.0f);
 		glm::mat4 scalezero = glm::mat4(1.0f);
 		glm::mat4 Rx = glm::mat4(1.0f);
+		glm::mat4 Ry = glm::mat4(1.0f);
+		glm::mat4 moveMatrix2 = glm::mat4(1.0f);
+		glm::mat4 moveMatrix3 = glm::mat4(1.0f);
 
-		moveMatrix = glm::translate(moveMatrix, glm::vec3(0, 0, 0));
-		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
+		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.5, -0.5, 0.0));		
+		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));	
 		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
-		scale = glm::scale(scale, glm::vec3(scale_x, scale_y, scale_z));
-		scalezero = glm::scale(scalezero, glm::vec3(scalebyzero, scalebyzero, scalebyzero));
 
-		Rx = glm::rotate(Rx, glm::radians(-temp), glm::vec3(1.0f, 0.0f, 0.0f));
-		//model = scalezero * moveMatrix * Tx * Ty * scale; //원점z축이동
-		model = Rx * Tx * Ty * moveMatrix * scale; //도형z축 이동
+		moveMatrix2 = glm::translate(moveMatrix2, glm::vec3(-0.5, 0.5, 0.0));			//원점이동
+		Rx = glm::rotate(Rx, glm::radians(tri_angle), glm::vec3(1.0f, 0.0f, 0.0f));		//x축에 대하여 회전
+		Ry = glm::rotate(Ry, glm::radians(-yangle), glm::vec3(0.0f, 1.0f, 0.0f));
+		moveMatrix3 = glm::translate(moveMatrix3, glm::vec3(0.5, -0.5, 0.0));			//역 이동
+		
+
+		model = Tx * Ty * moveMatrix * Ry * moveMatrix2 * Rx *  moveMatrix3;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-
-		glDrawArrays(GL_TRIANGLES, 6, 3); //뒤
-
-		mytrisetting();
-		glDrawArrays(GL_TRIANGLES, 9, 3); //오
-
-		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.5, -0.5, 0));
-		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
-		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
-		scale = glm::scale(scale, glm::vec3(scale_x, scale_y, scale_z));
-		scalezero = glm::scale(scalezero, glm::vec3(scalebyzero, scalebyzero, scalebyzero));
-
-		Rx = glm::rotate(Rx, glm::radians(-temp), glm::vec3(1.0f, 0.0f, 0.0f));
-		//model = scalezero * moveMatrix * Tx * Ty * scale; //원점z축이동
-		model = moveMatrix * Rx * Tx * Ty  * scale; //도형z축 이동
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		
 		glDrawArrays(GL_TRIANGLES, 12, 3); //앞
 
 		mytrisetting();
@@ -235,10 +261,7 @@ public:
 		moveMatrix = glm::translate(moveMatrix, glm::vec3(movex, movey, movez));
 		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
 		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
-		scale = glm::scale(scale, glm::vec3(scale_x, scale_y, scale_z));
-		scalezero = glm::scale(scalezero, glm::vec3(scalebyzero, scalebyzero, scalebyzero));
 
-		//model = scalezero * moveMatrix * Tx * Ty * scale; //원점z축이동
 		model = scalezero * Tx * Ty * moveMatrix * scale; //도형z축 이동
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -257,11 +280,8 @@ public:
 		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.5, -0.5, 0));
 		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
 		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
-		scale = glm::scale(scale, glm::vec3(scale_x, scale_y, scale_z));
-		scalezero = glm::scale(scalezero, glm::vec3(scalebyzero, scalebyzero, scalebyzero));
-
-		//model = scalezero * moveMatrix * Tx * Ty * scale; //원점z축이동
-		model = Tx * Ty * moveMatrix * scale; //도형z축 이동
+		
+		model = Tx * Ty * moveMatrix; //도형z축 이동
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	}
@@ -448,28 +468,161 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
 	// 그리기 부분 구현: 그리기 관련 부분이 여기에 포함된다.
 	glUseProgram(s_program);
-	glEnable(GL_DEPTH_TEST);
+
+	if (myrect.depth_test)
+	{
+		glEnable(GL_DEPTH_TEST);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
+	//투영
+	glm::mat4 projection = glm::mat4(1.0f);
+	if (myrect.projection)
+	{
+		if (myrect.projection_type) //직각
+		{
+			projection = glm::ortho(-0.5f,0.5f,-0.5f,0.5f,-2.0f,2.0f);
+		}
+		else //원근
+		{
+			projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 50.0f);
+			projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0)); //--- 공간을 약간 뒤로 미뤄줌
+		}
+	}
+	unsigned int projectionLocation = glGetUniformLocation(s_program, "projectionTransform"); //--- 투영 변환 값 설정
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
 	//xy축
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 Ty = glm::mat4(1.0f);
 	glm::mat4 Tx = glm::mat4(1.0f);
+	glm::mat4 Rm = glm::mat4(1.0f);
+	glm::mat4 Rx = glm::mat4(1.0f);
+	glm::mat4 mo = glm::mat4(1.0f);
 	glm::mat4 moveMatrix = glm::mat4(1.0f);
+	glm::mat4 Ry = glm::mat4(1.0f);
+	glm::mat4 init = glm::mat4(1.0f);
 	moveMatrix = glm::translate(moveMatrix, glm::vec3(0, 0, 0));
-	Ty = glm::rotate(Ty, glm::radians(myrect.xangle), glm::vec3(0.0f, 1.0f, 0.0f));
-	Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = Tx * Ty * moveMatrix;
+	Ty = glm::rotate(Ty, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tx = glm::rotate(Tx, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = Tx * Ty;
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	glBindVertexArray(vao[1]);
+	glBindVertexArray(vao[5]);
 	glDrawArrays(GL_LINES, 0, 6);
 
-	//육면체
-	myrect.myrectsetting();
-	myrect.mydraw_hex();
 
-	//사면체
-	//myrect.mytrisetting();
-	myrect.mydraw_tri();
+	//삼각형
+	init = glm::translate(init, glm::vec3(0.0, 0.0, 0.0));
+	Tx = init, Ty = init;
+	moveMatrix = init;
+	moveMatrix = glm::translate(moveMatrix, glm::vec3(0.25, -0.25, 0));
+	Ty = glm::rotate(Ty, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tx = glm::rotate(Tx, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	Ry = glm::rotate(Ry, glm::radians(myrect.revolutiony), glm::vec3(0.0f, 1.0f, 0.0f));
+	for (int i = 0; i < 5; ++i)
+	{
+		glBindVertexArray(vao[i]);
+		switch (i)
+		{
+		case 0: //삼각형 앞
+			Rx = glm::rotate(Rx, glm::radians(myrect.tri_angle), glm::vec3(1.0f, 0.0f, 0.0f));
+			Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, -0.25f));
+			mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, 0.25f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init,Rx = init;
+			break;
+		case 1: // 뒤
+			Rx = glm::rotate(Rx, glm::radians(-myrect.tri_angle), glm::vec3(1.0f, 0.0f, 0.0f));
+			Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, 0.25f));
+			mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, -0.25f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		case 2: // 왼
+			Rx = glm::rotate(Rx, glm::radians(myrect.tri_angle), glm::vec3(0.0f, 0.0f, 1.0f));
+			Rm = glm::translate(Rm, glm::vec3(0.25f, 0.25f, 0.0f));
+			mo = glm::translate(mo, glm::vec3(-0.25f, -0.25f, 0.0f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		case 3: // 오
+			Rx = glm::rotate(Rx, glm::radians(-myrect.tri_angle), glm::vec3(0.0f, 0.0f, 1.0f));
+			Rm = glm::translate(Rm, glm::vec3(-0.25f, 0.25f, 0.0f));
+			mo = glm::translate(mo, glm::vec3(0.25f, -0.25f, 0.0f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		}
+
+		if (i < 4)
+		{
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+		}
+		else
+		{
+			model = Tx * Ty * moveMatrix * Ry;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+	}
+
+	Rm = init, mo = init,Tx = init,Ty=init;
+	moveMatrix = init;
+	moveMatrix = glm::translate(moveMatrix, glm::vec3(-0.25f, 0.25f, 0));
+	Ty = glm::rotate(Ty, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tx = glm::rotate(Tx, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	
+	//사각형
+	for (int i = 6; i < 12; ++i)
+	{
+		glBindVertexArray(vao[i]);
+		float movey = myrect.hex_slied_y;
+		if (i == 6 || i == 11) //뒤 아래
+		{
+			model = Tx * Ty * moveMatrix * Ry;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+		switch (i)
+		{
+		case 7: //앞
+			Rx = glm::rotate(Rx, glm::radians(myrect.hex_front_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
+			Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, 0.25f));
+			mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, -0.25f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		case 8: //오
+			Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
+			model = Tx * Ty * moveMatrix * Ry * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		case 9: //왼
+			Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
+			model = Tx * Ty * moveMatrix * Ry * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		case 10: //위
+			Rx = glm::rotate(Rx, glm::radians(myrect.hex_up_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
+			Rm = glm::translate(Rm, glm::vec3(0.0f, -0.25f, 0.0f));
+			mo = glm::translate(mo, glm::vec3(0.0f, 0.25f, 0.0f));
+			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Rm = init, mo = init, Rx = init;
+			break;
+		}
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
 
 	glutSwapBuffers(); // 화면에 출력하기
 }
@@ -555,55 +708,128 @@ GLuint make_shaderProgram()
 void InitBuffer()
 {
 	//외부 움직이는 삼각형
-	glGenVertexArrays(4, vao);
-	glBindVertexArray(vao[0]);
+	glGenVertexArrays(12, vao);
+	glBindVertexArray(vao[0]); //삼각뿔 앞
 
-	glGenBuffers(8, vbo);
+	glGenBuffers(24, vbo);
 
-	//육면체 vertex
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hexahedronp), myrect.hexahedronp, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_front), myrect.tri_pos_front, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-	//육면체 color
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.colors), myrect.colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_color_front), myrect.tri_color_front, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(vao[1]);
-	//xy축 vertex
+	glBindVertexArray(vao[1]); //삼각뿔 뒤
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_back), myrect.tri_pos_back, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_color_back), myrect.tri_color_back, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[2]); //삼각뿔 왼
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_left), myrect.tri_pos_left, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_color_left), myrect.tri_color_left, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[3]); //삼각뿔 오
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_right), myrect.tri_pos_right, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_color_right), myrect.tri_color_right, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[4]); //삼각뿔 바닥
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_floor), myrect.tri_pos_floor, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_color_floor), myrect.tri_color_floor, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+	
+
+	glBindVertexArray(vao[5]); //xyz축
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.lines), myrect.lines, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-	//xy축 color
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.lines_color), myrect.lines_color, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(vao[2]);
-	//사면체
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri), myrect.tri, GL_STATIC_DRAW);
+	glBindVertexArray(vao[6]); //사각형 앞
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_front), myrect.hex_front, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-	//사면체 color
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_colors), myrect.tri_colors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_front_color), myrect.hex_front_color, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
-	//회전 line
-	glBindVertexArray(vao[3]);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.move_lines), myrect.move_lines, GL_STATIC_DRAW);
+	glBindVertexArray(vao[7]); //사각형 뒤
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_back), myrect.hex_back, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-	//회전 line color
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.move_lines_color), myrect.move_lines_color, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[15]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_back_color), myrect.hex_back_color, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[8]); //사각형 오
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[16]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_right), myrect.hex_right, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[17]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_right_color), myrect.hex_right_color, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[9]); //사각형 왼
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[18]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_left), myrect.hex_left, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[19]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_left_color), myrect.hex_left_color, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[10]); //사각형 위
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[20]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_up), myrect.hex_up, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[21]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_up_color), myrect.hex_up_color, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(vao[11]); //사각형 아래
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[22]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_down), myrect.hex_down, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[23]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_down_color), myrect.hex_down_color, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 }
@@ -656,7 +882,46 @@ void convertWINXYOpenGlXY(int x, int y, float* ox, float* oy)
 
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
-	
+	switch (key)
+	{
+	case 'h':
+		myrect.depth_test = !myrect.depth_test;
+		break;
+	case 'o':
+		if (myrect.tri_animation_ing == false)
+		{
+			myrect.tri_animation_ing = true;
+			myrect.tri_animation = !myrect.tri_animation;
+		}
+		break;
+	case 'y':
+		myrect.revolution = !myrect.revolution;
+		break;
+	case 't':
+		myrect.hex_up_animation = !myrect.hex_up_animation;
+		break;
+	case 'f':
+		if (myrect.hex_front_animation_ing == false)
+		{
+			myrect.hex_front_animation_ing = true;
+			myrect.hex_front_animation = !myrect.hex_front_animation;
+			
+		}
+		break;
+	case '1':
+		if (myrect.hex_slied_ing == false)
+		{
+			myrect.hex_slied_ing = true;
+			myrect.hex_slied = !myrect.hex_slied;
+		}
+		break;
+	case'0':
+		myrect.projection = !myrect.projection;
+		break;
+	case 'p':
+		myrect.projection_type = !myrect.projection_type;
+		break;
+	}
 	glutPostRedisplay();
 }
 
@@ -668,7 +933,76 @@ GLvoid Special(int key, int x, int y)
 
 void mytimer(int value)
 {
-	myrect.temp += 1;
+	if (myrect.tri_animation_ing)
+	{
+		if (myrect.tri_animation)
+		{
+			myrect.tri_angle += 1.0f;
+			if (myrect.tri_angle >= 238)
+			{
+				myrect.tri_animation_ing = false;
+			}
+		}
+		else
+		{
+			myrect.tri_angle -= 1.0f;
+			if (myrect.tri_angle <= 0)
+			{
+				myrect.tri_animation_ing = false;
+			}
+		}
+	}
+
+	if (myrect.revolution)
+	{
+		myrect.revolutiony += 1.0f;
+		if (myrect.revolutiony >= 360.0f)
+			myrect.revolutiony = 0;
+	}
+
+	if (myrect.hex_up_animation)
+	{
+		myrect.hex_up_anglex += 1.0f;
+		if (myrect.hex_up_anglex >= 360.0f)
+			myrect.hex_up_anglex = 0;
+	}
+
+	if (myrect.hex_front_animation_ing)
+	{
+		if (myrect.hex_front_animation)
+		{
+			myrect.hex_front_anglex -= 1.0f;
+			if (myrect.hex_front_anglex <= -90.0f)
+			{
+				myrect.hex_front_animation_ing = false;
+			}
+		}
+		else
+		{
+			myrect.hex_front_anglex += 1.0f;
+			if (myrect.hex_front_anglex >= 0.0f)
+			{
+				myrect.hex_front_animation_ing = false;
+			}
+		}
+	}
+
+	if (myrect.hex_slied_ing)
+	{
+		if (myrect.hex_slied)
+		{
+			myrect.hex_slied_y += 0.01f;
+			if (myrect.hex_slied_y >= 0.45f)
+				myrect.hex_slied_ing = false;
+		}
+		else
+		{
+			myrect.hex_slied_y -= 0.01f;
+			if (myrect.hex_slied_y <= 0.0f)
+				myrect.hex_slied_ing = false;
+		}
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(10.0f, mytimer, 0);
 }
