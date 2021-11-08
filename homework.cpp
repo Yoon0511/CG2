@@ -44,6 +44,7 @@ GLuint fragmentShader;
 GLuint uniformModel;
 GLuint vao[403], vbo[810];
 GLuint s_program;
+void my_draw(int type);
 
 class Mymountain {
 public:
@@ -75,12 +76,12 @@ public:
 	};
 
 	const GLfloat mountains_player_colors[108] = { //--- 삼각형 꼭지점 색상
-		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //앞
-		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //뒤
+		0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, //앞
+		0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, //뒤
 		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //오
-		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //왼
-		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //위
-		1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0  //아래
+		0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, //왼
+		0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, //위
+		0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0  //아래
 	};
 
 	bool projection_type;
@@ -90,31 +91,44 @@ public:
 	bool mountains_scale_height_check[400] = { false, };
 	bool mountains_move;
 	int mountain_index;
-	float cameraRx, cameraRy;
+	float cameraRx, cameraRy,camera_x,camera_y, camera_z;
+	float c_offsetx, c_offsety, c_offsetz;
 	float projection_z;
 	int mx, my;
 	bool make_maze;
 	bool player;
-	float player_x, player_z,player_angle;
+	float player_x, player_y,player_z,player_angle;
+	int player_dir;
+	glm::vec3 target;
 public:
 	Mymountain()
 	{
+		init();
+	}
+	void init()
+	{
+		input();
 		projection_type = true;
 		mountains_move = false;
 		make_maze = false;
 		mountain_index = 0;
 		cameraRx = cameraRy = 0.0f;
 		projection_z = -2.0f;
-		mx = 14;
-		my = 17;
 		player = false;
-		player_x = -0.8f;
-		player_z = -1.0f + (((my + 2) / 2) * (0.15f + 0.01f));
+		//player_x = -0.8f;
+		//player_z = -1.0f + (((my + 2) / 2) * (0.15f + 0.01f));
+		camera_x = 1.96f;
+		camera_y = 0.03f;
+		camera_z = 0;
+		player_x = -0.9f;
+		player_z = 0.19f;
+		player_y = -0.2f;
 		player_angle = 0.0f;
-		init();
-	}
-	void init()
-	{
+		player_dir = 0;
+		c_offsetx = 0;
+		c_offsety = 0;
+		c_offsety = 0;
+		target = glm::vec3(1.0f);
 		for (int i = 0; i < mx * my; ++i)
 		{
 			mountains_scale_height[i] = 0.3f;
@@ -170,6 +184,25 @@ public:
 			mountains_scale_height[i] = height;
 		}
 	}
+
+	void input()
+	{
+		cout << "육면체의 가로 세로 수 입력 :";
+		cin >> mx >> my;
+		cin.clear();
+		cout << "-----------------------command-----------------------" << endl;
+		cout << "투영					- o/p (직각/원근), z/Z (원근투영시 z축이동)" << endl;
+		cout << "육면체					- m/M (이동/정지)" << endl;
+		cout << "카메라회전				- x/X,y/Y (양의방향/음의 방향) " << endl;
+		cout << "미로제작				- r " << endl;
+		cout << "객체움직임				- t " << endl;
+		cout << "육면체정지및균일화		- r " << endl;
+		cout << "객체이동				- w/a/s/d " << endl;
+		cout << "육면체속도증가감소		- +/- " << endl;
+		cout << "카메라시점변환(미구현)	- 1/3 " << endl;
+		cout << "초기화					- c " << endl;
+		cout << "프로그램종료			- q " << endl;
+	}
 };
 
 
@@ -207,112 +240,31 @@ void main(int argc, char** argv)
 float a = 0.1f;
 GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수 
 {
+	glUseProgram(s_program);
+
+	//glutSwapBuffers(); // 화면에 출력하기
+	glViewport(0, 0, MY_WIDTH, MY_HEIGHT);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // 바탕색을 ‘blue’ 로 지정
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
-	// 그리기 부분 구현: 그리기 관련 부분이 여기에 포함된다.
-	glUseProgram(s_program);
 	glEnable(GL_DEPTH_TEST);
+	// 그리기 부분 구현: 그리기 관련 부분이 여기에 포함된다.
 
-	//카메라
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.7f, 2.0f); //--- 카메라 위치
-	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f); //--- 카메라 바라보는 방향
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
-	view = glm::rotate(view, glm::radians(mountain.cameraRx), glm::vec3(1.0f, 0.0f, 0.0f));
-	view = glm::rotate(view, glm::radians(mountain.cameraRy), glm::vec3(0.0f, 1.0f, 0.0f));
-	unsigned int viewLocation = glGetUniformLocation(s_program, "viewTransform"); //--- 뷰잉 변환 설정
-
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
-
-	//투영
-	glm::mat4 projection = glm::mat4(1.0f);
-	if (mountain.projection_type)
-	{
-		projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 5.0f, -5.0f);
-	}
-	else
-	{
-		projection = glm::perspective(glm::radians(100.0f), 1.0f, 0.1f, 500.0f);
-		projection = glm::translate(projection, glm::vec3(0.0, 0.0, mountain.projection_z)); //--- 공간을 약간 뒤로 미뤄줌
-	}
-	unsigned int projectionLocation = glGetUniformLocation(s_program, "projectionTransform"); //--- 투영 변환 값 설정
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
-
-
-	glBindVertexArray(vao[0]);
-	float ox = -1.0f;
-	float oz = -1.0f;
-	float offset_x = 0.15f;
-	float offset_z = 0.15f;
-	int mx = mountain.mx;
-	int my = mountain.my;
-
-	for (int z = 0; z < my; ++z)
-	{
-		for (int x = 0; x < mx; ++x)
-		{
-			float height = mountain.mountains_scale_height[mountain.mountain_index];
-			mountain.mountain_index++;
-			mountain.mountain_index = mountain.mountain_index % (int)(mx * my);
-			if (mountain.make_maze)
-			{
-				if (z != my / 2 && x != mx / 2)
-				{
-					glm::mat4 model = glm::mat4(1.0f);
-					model = glm::translate(model, glm::vec3(ox + (x * offset_x), 0.0f, oz + (z * offset_z)));
-					model = glm::translate(model, glm::vec3(0.0f, -0.25f, 0.0f));
-					model = glm::scale(model, glm::vec3(0.3f, height, 0.3f));
-					model = glm::translate(model, glm::vec3(0.0f, 0.25f, 0.0f));
-					glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-					glDrawArrays(GL_TRIANGLES, 0, 36);
-				}
-			}
-			else
-			{
-				glm::mat4 model = glm::mat4(1.0f);
-				model = glm::translate(model, glm::vec3(ox + (x * offset_x), 0.0f, oz + (z * offset_z)));
-				model = glm::translate(model, glm::vec3(0.0f, -0.25f, 0.0f));
-				model = glm::scale(model, glm::vec3(0.3f, height, 0.3f));
-				model = glm::translate(model, glm::vec3(0.0f, 0.25f, 0.0f));
-				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}
-		}
-	}
-
-	//바닥 400 : 5.95 = 100 : ?
-	glBindVertexArray(vao[401]);
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(ox, -0.27f, oz));
-	model = glm::translate(model, glm::vec3(-0.29f, 0.0f,-0.29f));
-	model = glm::scale(model, glm::vec3(5.95f, 0.1f, 5.95f));
-	model = glm::translate(model, glm::vec3(0.29f, 0.0f, 0.29f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-	if (mountain.player)
-	{
-		glBindVertexArray(vao[403]);
-		glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(ox + 0.2f + mountain.player_x, -0.2f, oz + (((my+2) / 2) * (offset_z + 0.01f))+ mountain.player_z));
-		model = glm::translate(model, glm::vec3(mountain.player_x,-0.2f, mountain.player_z));
-		model = glm::translate(model, glm::vec3(-0.25, 0.0f, -0.25));
-		model = glm::rotate(model, glm::radians(mountain.player_angle), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(0.25, 0.0f, 0.25));
-		//model = glm::scale(model, glm::vec3(0.2f, 0.1f, 0.2f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-	
-
+	my_draw(0);
 	glutSwapBuffers(); // 화면에 출력하기
+
+	
+	glViewport(500, 600, MY_WIDTH / 3, MY_HEIGHT / 3);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // 바탕색을 ‘blue’ 로 지정
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
+	glEnable(GL_DEPTH_TEST);// 그리기 부분 구현: 그리기 관련 부분이 여기에 포함된다.
+	my_draw(1);
+	glutSwapBuffers(); // 화면에 출력하기
+
 }
 
 GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수 
 {
-	glViewport(0, 0, w, h);
+	
 }
 void make_vertexShaders()
 {
@@ -408,7 +360,7 @@ void InitBuffer()
 	glEnableVertexAttribArray(0);
 	//육면체 color
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mountain.mountains_colors), mountain.mountains_colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mountain.mountains_player_colors), mountain.mountains_player_colors, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 }
@@ -461,6 +413,7 @@ void convertWINXYOpenGlXY(int x, int y, float* ox, float* oy)
 
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
+	int angle = 0;
 	switch (key)
 	{
 	case 'o': //직각투영
@@ -513,18 +466,59 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		mountain.player = true;
 		break;
 	case 'w':
-		mountain.player_x += 0.01f;
+		switch (mountain.player_dir)
+		{
+		case 0:
+			mountain.player_x += 0.01f;
+			break;
+		case 1:
+			mountain.player_z -= 0.01f;
+			break;
+		case 2:
+			mountain.player_x -= 0.01f;
+			break;
+		case 3:
+			mountain.player_z += 0.01f;
+			break;
+		}
 		break;
 	case 'a':
-		//mountain.player_z -= 0.01f;
-		mountain.player_angle -= 90.0f;
+		mountain.player_angle += 90.0f;
+		mountain.player_angle = (int)mountain.player_angle % 360;
+		mountain.player_dir++;
+		mountain.player_dir = mountain.player_dir % 4;
 		break;
 	case 's':
-		mountain.player_x -= 0.01f;
+		switch (mountain.player_dir)
+		{
+		case 0:
+			mountain.player_x -= 0.01f;
+			break;
+		case 1:
+			mountain.player_z += 0.01f;
+			break;
+		case 2:
+			mountain.player_x += 0.01f;
+			break;
+		case 3:
+			mountain.player_z -= 0.01f;
+			break;
+		}
 		break;
 	case 'd':
-		//mountain.player_z += 0.01f;
-		mountain.player_angle += 90.0f;
+		mountain.player_angle -= 90.0f;
+		mountain.player_angle = (int)mountain.player_angle % 360;
+		mountain.player_dir--;
+		if (mountain.player_dir < 0)
+		{
+			mountain.player_dir = 3;
+		}
+		break;
+	case 'c':
+		mountain.init();
+		break;
+	case 'q':
+		exit(0);
 		break;
 	}
 	glutPostRedisplay();
@@ -544,4 +538,118 @@ void mytimer(int value)
 
 	glutPostRedisplay();
 	glutTimerFunc(10.0f, mytimer, 0);
+}
+
+void my_draw(int type)
+{
+	
+	//카메라
+	if (type == 0)
+	{
+		glm::vec3 cameraPos = glm::vec3(0.0f, 0.7f, 2.0f); //--- 카메라 위치
+		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+		glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+		view = glm::rotate(view, glm::radians(mountain.cameraRx), glm::vec3(1.0f, 0.0f, 0.0f));
+		view = glm::rotate(view, glm::radians(mountain.cameraRy), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		unsigned int viewLocation = glGetUniformLocation(s_program, "viewTransform"); //--- 뷰잉 변환 설정
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+	}
+	else
+	{
+		glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 0.1f); //--- 카메라 위치
+		glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+		glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+
+		unsigned int viewLocation = glGetUniformLocation(s_program, "viewTransform"); //--- 뷰잉 변환 설정
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+	}
+
+	//투영
+	glm::mat4 projection = glm::mat4(1.0f);
+	if (mountain.projection_type)
+	{
+		projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 5.0f, -5.0f);
+	}
+	else
+	{
+		projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.1f, 500.0f);
+		projection = glm::translate(projection, glm::vec3(0.0, 0.0, mountain.projection_z)); //--- 공간을 약간 뒤로 미뤄줌
+	}
+	unsigned int projectionLocation = glGetUniformLocation(s_program, "projectionTransform"); //--- 투영 변환 값 설정
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
+
+
+	glBindVertexArray(vao[0]);
+	float ox = -1.0f;
+	float oz = -1.0f;
+	float offset_x = 0.15f;
+	float offset_z = 0.15f;
+	int mx = mountain.mx;
+	int my = mountain.my;
+
+	for (int z = 0; z < my; ++z)
+	{
+		for (int x = 0; x < mx; ++x)
+		{
+			float height = mountain.mountains_scale_height[mountain.mountain_index];
+			mountain.mountain_index++;
+			mountain.mountain_index = mountain.mountain_index % (int)(mx * my);
+			if (mountain.make_maze)
+			{
+				if (z != my / 2 && x != mx / 2 && z != (my / 2) + 1 && x != (mx / 2) + 1)
+				{
+					glm::mat4 model = glm::mat4(1.0f);
+					model = glm::translate(model, glm::vec3(ox + (x * offset_x), 0.0f, oz + (z * offset_z)));
+					model = glm::translate(model, glm::vec3(0.0f, -0.25f, 0.0f));
+					model = glm::scale(model, glm::vec3(0.3f, height, 0.3f));
+					model = glm::translate(model, glm::vec3(0.0f, 0.25f, 0.0f));
+					glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+			}
+			else
+			{
+				glm::mat4 model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(ox + (x * offset_x), 0.0f, oz + (z * offset_z)));
+				model = glm::translate(model, glm::vec3(0.0f, -0.25f, 0.0f));
+				model = glm::scale(model, glm::vec3(0.3f, height, 0.3f));
+				model = glm::translate(model, glm::vec3(0.0f, 0.25f, 0.0f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+		}
+	}
+
+	//바닥 400 : 5.95 = 100 : ?
+	glBindVertexArray(vao[401]);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(ox, -0.27f, oz));
+	model = glm::translate(model, glm::vec3(-0.29f, 0.0f, -0.29f));
+	model = glm::scale(model, glm::vec3(5.95f, 0.1f, 5.95f));
+	model = glm::translate(model, glm::vec3(0.29f, 0.0f, 0.29f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+	if (mountain.player)
+	{
+		glBindVertexArray(vao[403]);
+		glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(ox + 0.2f + mountain.player_x, -0.2f, oz + (((my+2) / 2) * (offset_z + 0.01f))+ mountain.player_z));
+
+		model = glm::translate(model, glm::vec3(mountain.player_x, mountain.player_y, mountain.player_z));
+
+		model = glm::translate(model, glm::vec3(0.0, 0.25, 0.0));
+		model = glm::rotate(model, glm::radians(mountain.player_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0, -0.25, 0.0));
+
+		model = glm::scale(model, glm::vec3(0.2f, 0.1f, 0.2f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
 }

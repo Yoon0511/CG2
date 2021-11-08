@@ -1,11 +1,13 @@
 ﻿  homework.cpp
 C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(26,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Vectex' 왼쪽은 무시됩니다.
 C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(29,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Rectpos' 왼쪽은 무시됩니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(178,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(179,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(200,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(440,9): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(494,37): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(497,38): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(546,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(211,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(212,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(233,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(392,9): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(447,37): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(450,38): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(487,54): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(510,54): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\homework.cpp(540,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   CG2.vcxproj -> C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\Debug\CG2.exe
