@@ -80,6 +80,7 @@ public:
 	bool change_rect;
 	float light_x, light_y, light_z;
 	float light_rect_x, light_rect_y, light_rect_z;
+	float light_angle;
 public:
 	myRect() {
 		revolutiony = 0.0f;
@@ -113,6 +114,7 @@ public:
 		light_rect_x = 0.0f;
 		light_rect_y = 0.0f;
 		light_rect_z = 0.0f;
+		light_angle = 0.0f;
 	};
 	GLfloat hexahedronp[108] = {
 		  0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25,		//앞
@@ -538,18 +540,12 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	//		projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0)); //--- 공간을 약간 뒤로 미뤄줌
 	//	}
 	//}
-	projection = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 500.0f);
-	projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0)); //--- 공간을 약간 뒤로 미뤄줌
+	projection = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
+	projection = glm::translate(projection, glm::vec3(0.0, 0.0, -15.0)); //--- 공간을 약간 뒤로 미뤄줌
 	unsigned int projectionLocation = glGetUniformLocation(s_program, "projectionTransform"); //--- 투영 변환 값 설정
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
-
-	int lightPosLocation = glGetUniformLocation(s_program, "lightPos"); //--- lightPos 값 전달: (0.0, 0.0, 5.0);
-	glUniform3f(lightPosLocation, -myrect.light_x + myrect.light_rect_x, -myrect.light_y + myrect.light_rect_y, myrect.light_z + myrect.light_rect_z);
-	int lightColorLocation = glGetUniformLocation(s_program, "lightColor"); //--- lightColor 값 전달: (1.0, 1.0, 1.0) 백색
-	glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
-	int objColorLocation = glGetUniformLocation(s_program, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
-	glUniform3f(objColorLocation, 0.0, 1.0, 0.0);
+	
 	//xy축
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 Ty = glm::mat4(1.0f);
@@ -560,8 +556,22 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glm::mat4 moveMatrix = glm::mat4(1.0f);
 	glm::mat4 Ry = glm::mat4(1.0f);
 	glm::mat4 init = glm::mat4(1.0f);
-
 	
+	model = init;
+	int lightmodelLocation = glGetUniformLocation(s_program, "lightmodel");
+	glUniformMatrix4fv(lightmodelLocation, 1, GL_FALSE, glm::value_ptr(model));
+
+	float lightx = cos(myrect.light_angle) * sin(myrect.light_angle);
+	float lightz = -sin(myrect.light_angle) * cos(myrect.light_angle);
+	int lightPosLocation = glGetUniformLocation(s_program, "lightPos"); //--- lightPos 값 전달: (0.0, 0.0, 5.0);
+	glUniform3f(lightPosLocation, lightx,0.0f,1.0f + lightz);
+
+	//glUniform3f(lightPosLocation, -myrect.light_x + myrect.light_rect_x, -myrect.light_y + myrect.light_rect_y, myrect.light_z + myrect.light_rect_z);
+	int lightColorLocation = glGetUniformLocation(s_program, "lightColor"); //--- lightColor 값 전달: (1.0, 1.0, 1.0) 백색
+	glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
+	int objColorLocation = glGetUniformLocation(s_program, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+	glUniform3f(objColorLocation, 0.0, 1.0, 0.0);
+
 	/*moveMatrix = glm::translate(moveMatrix, glm::vec3(0, 0, 0));
 	Ty = glm::rotate(Ty, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Tx = glm::rotate(Tx, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -574,63 +584,66 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	
 
 	//삼각형
-	Rm = init, mo = init, Tx = init, Ty = init;
-	moveMatrix = init;
-	moveMatrix = glm::translate(moveMatrix, glm::vec3(myrect.light_x + myrect.light_rect_x, myrect.light_y + myrect.light_rect_y, myrect.light_z + myrect.light_rect_z));
-	Ty = glm::rotate(Ty, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	Tx = glm::rotate(Tx, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//Rm = init, mo = init, Tx = init, Ty = init;
+	//moveMatrix = init;
+	//moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0f,0.0f,0.0f + myrect.light_z));
+	//Ty = glm::rotate(Ty, glm::radians(myrect.xangle + myrect.light_z), glm::vec3(0.0f, 1.0f, 0.0f));
+	//Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	//사각형
-	for (int i = 6; i < 12; ++i)
-	{
-		glBindVertexArray(vao[i]);
-		float movey = myrect.hex_slied_y;
-		if (i == 6 || i == 11) //뒤 아래
-		{
-			model = Tx * Ty * moveMatrix * Ry;
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
-		switch (i)
-		{
-		case 7: //앞
-			Rx = glm::rotate(Rx, glm::radians(myrect.hex_front_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
-			Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, 0.25f));
-			mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, -0.25f));
-			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Rm = init, mo = init, Rx = init;
-			break;
-		case 8: //오
-			Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
-			model = Tx * Ty * moveMatrix * Ry * Rm;
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Rm = init, mo = init, Rx = init;
-			break;
-		case 9: //왼
-			Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
-			model = Tx * Ty * moveMatrix * Ry * Rm;
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Rm = init, mo = init, Rx = init;
-			break;
-		case 10: //위
-			Rx = glm::rotate(Rx, glm::radians(myrect.hex_up_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
-			Rm = glm::translate(Rm, glm::vec3(0.0f, -0.25f, 0.0f));
-			mo = glm::translate(mo, glm::vec3(0.0f, 0.25f, 0.0f));
-			model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Rm = init, mo = init, Rx = init;
-			break;
-		}
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-	}
+	//////사각형
+	//for (int i = 6; i < 12; ++i)
+	//{
+	//	glBindVertexArray(vao[i]);
+	//	float movey = myrect.hex_slied_y;
+	//	if (i == 6 || i == 11) //뒤 아래
+	//	{
+	//		model = Tx * Ty * moveMatrix * Ry;
+	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	//		glDrawArrays(GL_TRIANGLES, 0, 6);
+	//	}
+	//	switch (i)
+	//	{
+	//	case 7: //앞
+	//		Rx = glm::rotate(Rx, glm::radians(myrect.hex_front_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
+	//		Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, 0.25f));
+	//		mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, -0.25f));
+	//		model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	//		Rm = init, mo = init, Rx = init;
+	//		break;
+	//	case 8: //오
+	//		Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
+	//		model = Tx * Ty * moveMatrix * Ry * Rm;
+	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	//		Rm = init, mo = init, Rx = init;
+	//		break;
+	//	case 9: //왼
+	//		Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
+	//		model = Tx * Ty * moveMatrix * Ry * Rm;
+	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	//		Rm = init, mo = init, Rx = init;
+	//		break;
+	//	case 10: //위
+	//		Rx = glm::rotate(Rx, glm::radians(myrect.hex_up_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
+	//		Rm = glm::translate(Rm, glm::vec3(0.0f, -0.25f, 0.0f));
+	//		mo = glm::translate(mo, glm::vec3(0.0f, 0.25f, 0.0f));
+	//		model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
+	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	//		Rm = init, mo = init, Rx = init;
+	//		break;
+	//	}
+	//	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//}
 
-	Rm = init, mo = init, Tx = init, Ty = init;
+	model = init;
+	Rm = init, mo = init, Tx = init, Ty = init, Ry = init;
 	moveMatrix = init;
-	moveMatrix = glm::translate(moveMatrix, glm::vec3(myrect.light_x - 0.1f, myrect.light_y, myrect.light_z));
-	Ty = glm::rotate(Ty, glm::radians(myrect.xangle), glm::vec3(0.0f, 1.0f, 0.0f));
+	//moveMatrix = glm::translate(moveMatrix, glm::vec3(myrect.light_x, myrect.light_y, myrect.light_z));
+	moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0f,0.0f,3.0f));
+	Ty = glm::rotate(Ty, glm::radians(myrect.xangle + myrect.light_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
-
+	Ry = init;
+	//Ry = glm::rotate(Ry, glm::radians(myrect.light_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	//사각형
 	for (int i = 6; i < 12; ++i)
 	{
@@ -676,6 +689,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+	Ry = init;
 	if (myrect.change_rect)
 	{
 		moveMatrix = init;
@@ -1141,6 +1155,9 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		break;
 	case '4':
 		myrect.yangle += 3.0f;
+		break;
+	case '5':
+		myrect.light_angle += 0.01f;
 		break;
 	}
 	glutPostRedisplay();

@@ -8,6 +8,7 @@ out vec4 FragColor;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
+uniform mat4 lightmodel;
 
 void main()
 {
@@ -15,7 +16,9 @@ void main()
    vec3 ambient = ambientLight * lightColor;
 
    vec3 normalVector = normalize(Normal);
-   vec3 lightDir = normalize(lightPos - FragPos);
+   vec3 a = lightPos;
+   a = vec3(lightmodel * vec4(a,1.0));
+   vec3 lightDir = normalize(a  - FragPos);
    float diffuseLight = max(dot(normalVector, lightDir), 0.0);
    vec3 result = (diffuseLight + ambientLight) * lightColor * objectColor;
 
