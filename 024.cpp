@@ -45,25 +45,94 @@ float r = 0;
 float offset = 0.0f;
 float trilncrment = 0.01f;
 void mytimer(int value);
-GLuint vao[13], vbo[26];
+GLuint vao[16], vbo[30];
 GLuint s_program;
 float rect_size = RECT_SIZE;
 
-float vertices[] = { //--- 버텍스 속성: 좌표값(FragPos), 노말값 (Normal)
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f
-};
+float SphereObj[1000][18];
+int Shpherindex = 0;
+int ReadObj(FILE* objFile)
+{
+	char count[100], bind[100];
+	int vertexNum = 0;
+	int faceNum = 0;
 
+	while (!feof(objFile)) {
+		fscanf(objFile, "%s", count);
+		printf("%s\n", count);
+		if (count[0] == 'v' && count[1] == '\0')
+			vertexNum += 1;
+		else if (count[0] == 'f' && count[1] == '\0')
+			faceNum += 1;
+		memset(count, '\0', sizeof(count));
+	}
+	//printf("vertexNum:%d faceNum:%d\n", vertexNum, faceNum);
+	vertexNum += 1;
+	glm::vec3* vertex;
+	glm::vec3* normal;
+	glm::uvec3* v, * t, * n;
+	int vertIndex = 1;
+	int normIndex = 1;
+	int faceIndex = 0;
+	v = (glm::uvec3*)malloc(sizeof(glm::vec3) * faceNum);
+	t = (glm::uvec3*)malloc(sizeof(glm::vec3) * faceNum);
+	n = (glm::uvec3*)malloc(sizeof(glm::vec3) * faceNum);
+	vertex = (glm::vec3*)malloc(sizeof(glm::vec3) * vertexNum);
+	normal = (glm::vec3*)malloc(sizeof(glm::vec3) * vertexNum);
+	rewind(objFile);
+	while (!feof(objFile)) {
+		fscanf(objFile, "%s", bind);
+		//printf("%s        count:%d\n", bind, a++);
+		if (bind[0] == 'v' && bind[1] == '\0') {
+			fscanf(objFile, "%f %f %f",
+				&vertex[vertIndex].x, &vertex[vertIndex].y, &vertex[vertIndex].z);
+			//printf("vertex[%d].x=%f\n", vertIndex, vertex[vertIndex].x);
+			vertIndex++;
+		}
+		else if (bind[0] == 'v' && bind[1] == 'n') {
+			fscanf(objFile, "%f %f %f",
+				&normal[normIndex].x, &normal[normIndex].y, &normal[normIndex].z);
+			//printf("normal[%d].x=%f\n", normIndex, normal[normIndex].x);
+			normIndex++;
+		}
+		else if (bind[0] == 'f' && bind[1] == '\0') {
+			fscanf(objFile, "%d/%d/%d %d/%d/%d %d/%d/%d",
+				&v[faceIndex].x, &t[faceIndex].x, &n[faceIndex].x, &v[faceIndex].y, &t[faceIndex].y, &n[faceIndex].y, &v[faceIndex].z, &t[faceIndex].z, &n[faceIndex].z);
+			//printf("%d/%d/%d %d/%d/%d %d/%d/%d\n", v[faceIndex].x, t[faceIndex].x, n[faceIndex].x, v[faceIndex].y, t[faceIndex].y, n[faceIndex].y, v[faceIndex].z, t[faceIndex].z, n[faceIndex].z);
+			//printf("faceIndex:%d\n", faceIndex);
+			faceIndex++;
+		}
+	}
+
+	//printf("VertexN:%d , faceIndexN:%d\n", vertIndex, faceIndex);
+
+	for (int i = 0; i < faceIndex; i++) {
+		SphereObj[i][0] = vertex[v[i].x].x;
+		SphereObj[i][1] = vertex[v[i].x].y;
+		SphereObj[i][2] = vertex[v[i].x].z;
+		SphereObj[i][3] = normal[n[i].x].x;
+		SphereObj[i][4] = normal[n[i].x].y;
+		SphereObj[i][5] = normal[n[i].x].z;
+
+		SphereObj[i][6] = vertex[v[i].y].x;
+		SphereObj[i][7] = vertex[v[i].y].y;
+		SphereObj[i][8] = vertex[v[i].y].z;
+		SphereObj[i][9] = normal[n[i].y].x;
+		SphereObj[i][10] = normal[n[i].y].y;
+		SphereObj[i][11] = normal[n[i].y].z;
+
+		SphereObj[i][12] = vertex[v[i].z].x;
+		SphereObj[i][13] = vertex[v[i].z].y;
+		SphereObj[i][14] = vertex[v[i].z].z;
+		SphereObj[i][15] = normal[n[i].z].x;
+		SphereObj[i][16] = normal[n[i].z].y;
+		SphereObj[i][17] = normal[n[i].z].z;
+	}
+	//for (int i = 0; i < faceIndex; i++) {
+	//    printf("faceIndex:%d\nver:%f %f %f\nnor:%f %f %f\n\n", i, SphereObj[i][0], SphereObj[i][1], SphereObj[i][2], SphereObj[i][3], SphereObj[i][4], SphereObj[i][5]);
+	//}
+	return faceIndex;
+}
 class myRect {
 public:
 	GLUquadricObj* qobj;
@@ -81,17 +150,18 @@ public:
 	float light_x, light_y, light_z;
 	float light_rect_x, light_rect_y, light_rect_z;
 	float light_angle;
+	bool lighton;
 public:
 	myRect() {
 		revolutiony = 0.0f;
 		tri_angle = 0.0f;
 		movespeed = 0.05;
-		xangle = -35.0f;
-		yangle = -10.0f;
-		movex = -0.5f;
-		movey = 0.5f;
+		xangle = 0.0;
+		yangle = 0.0f;
+		movex = -0.0f;
+		movey = 0.0f;
 		movez = 0.0f;
-		glux = 0.5f;
+		glux = 0.0f;
 		gluy = -0.7f;
 		gluz = 0.0f;
 		gluanglex = 0;
@@ -115,6 +185,7 @@ public:
 		light_rect_y = 0.0f;
 		light_rect_z = 0.0f;
 		light_angle = 0.0f;
+		lighton = true;
 	};
 	GLfloat hexahedronp[108] = {
 		  0.25,0.25,0.25, -0.25,0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,0.25, 0.25,-0.25,0.25, 0.25,0.25,0.25,		//앞
@@ -131,12 +202,12 @@ public:
 	GLfloat hex_up[18] = { 0.25,0.25,0.25, 0.25,0.25,-0.25, -0.25,0.25,-0.25, -0.25,0.25,-0.25, -0.25,0.25,0.25, 0.25,0.25,0.25 };			// 위
 	GLfloat hex_down[18] = { 0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,-0.25, -0.25,-0.25,-0.25, 0.25,-0.25,-0.25, 0.25,-0.25,0.25 };	// 아래
 
-	GLfloat hex_front_color[18] = { 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0 };		//앞
-	GLfloat hex_back_color[18] = { 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0 };		//뒤
-	GLfloat hex_right_color[18] = { 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0 };		//오
-	GLfloat hex_left_color[18] = { 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0 };		//왼
-	GLfloat hex_up_color[18] = { 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0 };		//위
-	GLfloat hex_down_color[18] = { 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5 };		//아래
+	GLfloat hex_front_color[18] = { 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0 };					//앞 001
+	GLfloat hex_back_color[18] = { 0.0,0.0,-1.0, 0.0,0.0,-1.0, 0.0,0.0,-1.0, 0.0,0.0,-1.0, 0.0,0.0,-1.0, 0.0,0.0,-1.0 };			//뒤 00-1
+	GLfloat hex_right_color[18] = { 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0 };					//오 100
+	GLfloat hex_left_color[18] = { -1.0,0.0,0.0, -1.0,0.0,0.0, -1.0,0.0,0.0, -1.0,0.0,0.0, -1.0,0.0,0.0, -1.0,0.0,0.0 };			//왼 -100
+	GLfloat hex_up_color[18] = { 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0 };					//위 010
+	GLfloat hex_down_color[18] = { 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0 };			//아래 0-10
 
 	//const GLfloat colors[108] = { //--- 삼각형 꼭지점 색상
 	//	1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0, //앞
@@ -144,7 +215,7 @@ public:
 	//	0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0, //오
 	//	1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, //왼
 	//	0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0, //위
-	//	0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,0.5  //아래
+	//	0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0  //아래
 	//};
 
 	const GLfloat colors[108] = { //--- 삼각형 꼭지점 색상
@@ -158,7 +229,7 @@ public:
 	/*const GLfloat lines[18] = {
 		-0.8,0.0,0.0, 0.8,0.0,0.0,
 		0.0,0.8,0.0, 0.0,-0.8,0.0,
-		0.5,-0.5,0.5, -0.5,0.5,-0.5,
+		0.0,-0.0,0.0, -0.0,0.0,-0.0,
 	};*/
 
 	const GLfloat lines[18] = {
@@ -174,8 +245,8 @@ public:
 	};
 
 	//GLfloat tri[36] = {
-	//	-0.5,0.0,0.0, 0.5,0.0,0.0, 0.0,0.5,0.0,  0.0,0.0,0.5, 0.5,0.0,0.0, 0.0,0.5,0.0, //앞 오
-	//	-0.5,0.0,0.0, 0.0,0.0,0.5, 0.0,0.5,0.0,  0.0,0.0,0.5, -0.5,0.0,0.0, 0.5,0.0,0.0 //왼 
+	//	-0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0,  0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0, //앞 오
+	//	-0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0,  0.0,0.0,0.0, -0.0,0.0,0.0, 0.0,0.0,0.0 //왼 
 	//};
 
 	GLfloat tri[54] = {
@@ -190,11 +261,11 @@ public:
 	GLfloat tri_pos_left[3][3] = { 0.0,0.2,0.0, -0.25,-0.25,-0.25, -0.25,-0.25,0.25 };
 	GLfloat tri_pos_floor[6][3] = { 0.25,-0.25,0.25, -0.25,-0.25,0.25, -0.25,-0.25,-0.25,-0.25,-0.25,-0.25,0.25,-0.25,-0.25,0.25,-0.25,0.25 };
 
-	GLfloat tri_color_front[3][3] = { 0.0,1.0,0.0, 0.0,1.0,0.0, 0.0,1.0,0.0 };
-	GLfloat tri_color_back[3][3] = { 1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0 };
-	GLfloat tri_color_right[3][3] = { 0.0,0.0,1.0, 0.0,0.0,1.0, 0.0,0.0,1.0 };
-	GLfloat tri_color_left[3][3] = { 1.0,0.5,0.0, 1.0,0.5,0.0, 1.0,0.5,0.0 };
-	GLfloat tri_color_floor[6][3] = { 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0 };
+	GLfloat tri_color_front[3][3] = { 0.0,1.0,1.0, 0.0,1.0,1.0, 0.0,1.0,1.0 };          //011
+	GLfloat tri_color_back[3][3] = { 0.0,1.0,-1.0, 0.0,1.0,-1.0, 0.0,1.0,-1.0 };			//01-1
+	GLfloat tri_color_right[3][3] = { 1.0,1.0,0.0, 1.0,1.0,0.0, 1.0,1.0,0.0 };			//110
+	GLfloat tri_color_left[3][3] = { -1.0,1.0,0.0, -1.0,1.0,0.0, -1.0,1.0,0.0 };			//-110
+	GLfloat tri_color_floor[6][3] = { 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0, 0.0,-1.0,0.0 }; //0-10
 
 
 
@@ -206,7 +277,7 @@ public:
 
 	GLfloat move_lines[7560];
 	GLfloat move_lines_color[3] = {
-		0.5,0.5,0.5
+		0.0,0.0,0.0
 	};
 
 	
@@ -268,14 +339,14 @@ public:
 		glm::mat4 moveMatrix2 = glm::mat4(1.0f);
 		glm::mat4 moveMatrix3 = glm::mat4(1.0f);
 
-		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.5, -0.5, 0.0));
+		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0, -0.0, 0.0));
 		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
 		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		moveMatrix2 = glm::translate(moveMatrix2, glm::vec3(-0.5, 0.5, 0.0));			//원점이동
+		moveMatrix2 = glm::translate(moveMatrix2, glm::vec3(-0.0, 0.0, 0.0));			//원점이동
 		Rx = glm::rotate(Rx, glm::radians(tri_angle), glm::vec3(1.0f, 0.0f, 0.0f));		//x축에 대하여 회전
 		Ry = glm::rotate(Ry, glm::radians(-yangle), glm::vec3(0.0f, 1.0f, 0.0f));
-		moveMatrix3 = glm::translate(moveMatrix3, glm::vec3(0.5, -0.5, 0.0));			//역 이동
+		moveMatrix3 = glm::translate(moveMatrix3, glm::vec3(0.0, -0.0, 0.0));			//역 이동
 
 
 		model = Tx * Ty * moveMatrix * Ry * moveMatrix2 * Rx * moveMatrix3;
@@ -316,7 +387,7 @@ public:
 		glm::mat4 scalezero = glm::mat4(1.0f);
 
 
-		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.5, -0.5, 0));
+		moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0, -0.0, 0));
 		Tx = glm::rotate(Tx, glm::radians(xangle), glm::vec3(1.0f, 0.0f, 0.0f));
 		Ty = glm::rotate(Ty, glm::radians(yangle), glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -367,10 +438,10 @@ public:
 	{
 		xangle = 10.0;
 		yangle = -45.0;
-		movex = -0.5f;
-		movey = 0.5f;
+		movex = -0.0f;
+		movey = 0.0f;
 		movez = 0.0f;
-		glux = 0.5f;
+		glux = 0.0f;
 		gluy = -0.7f;
 		gluz = 0.0f;
 		gluanglex = -30.0;
@@ -399,7 +470,7 @@ public:
 			y = rad * sin(angle);
 			dx[i] = x;
 			dz[i] = y;
-			//glVertex3f(x + -0.5, 0.7,y);
+			//glVertex3f(x + -0.0, 0.7,y);
 		}
 		//glEnd();
 		//glFinish();
@@ -490,6 +561,14 @@ void main(int argc, char** argv)
 
 	myrect.setline();
 
+	FILE* sphere = fopen("sphere.obj", "rb");
+	if (sphere == NULL) {
+		printf("File open failed...");
+		exit(1);
+	}
+	Shpherindex = ReadObj(sphere);
+	fclose(sphere);
+
 	InitShader();
 	InitBuffer();
 
@@ -532,7 +611,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	//{
 	//	if (myrect.projection_type) //직각
 	//	{
-	//		projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, -2.0f, 2.0f);
+	//		projection = glm::ortho(-0.0f, 0.0f, -0.0f, 0.0f, -2.0f, 2.0f);
 	//	}
 	//	else //원근
 	//	{
@@ -540,8 +619,10 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	//		projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0)); //--- 공간을 약간 뒤로 미뤄줌
 	//	}
 	//}
-	projection = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
-	projection = glm::translate(projection, glm::vec3(0.0, 0.0, -15.0)); //--- 공간을 약간 뒤로 미뤄줌
+	projection = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.0f);
+	projection = glm::translate(projection, glm::vec3(0.0, 0.0, -7.0)); //--- 공간을 약간 뒤로 미뤄줌
+	projection = glm::rotate(projection, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	projection = glm::rotate(projection, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	unsigned int projectionLocation = glGetUniformLocation(s_program, "projectionTransform"); //--- 투영 변환 값 설정
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
@@ -558,88 +639,36 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glm::mat4 init = glm::mat4(1.0f);
 	
 	model = init;
+
+	moveMatrix = glm::translate(moveMatrix, glm::vec3(myrect.light_x, myrect.light_y, myrect.light_z));
+	Ty = glm::rotate(Ty, glm::radians(myrect.light_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
 	int lightmodelLocation = glGetUniformLocation(s_program, "lightmodel");
+	model = Ty;
 	glUniformMatrix4fv(lightmodelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
-	float lightx = cos(myrect.light_angle) * sin(myrect.light_angle);
-	float lightz = -sin(myrect.light_angle) * cos(myrect.light_angle);
-	int lightPosLocation = glGetUniformLocation(s_program, "lightPos"); //--- lightPos 값 전달: (0.0, 0.0, 5.0);
-	glUniform3f(lightPosLocation, lightx,0.0f,1.0f + lightz);
-
-	//glUniform3f(lightPosLocation, -myrect.light_x + myrect.light_rect_x, -myrect.light_y + myrect.light_rect_y, myrect.light_z + myrect.light_rect_z);
-	int lightColorLocation = glGetUniformLocation(s_program, "lightColor"); //--- lightColor 값 전달: (1.0, 1.0, 1.0) 백색
+	int lightPosLocation = glGetUniformLocation(s_program, "lightPos");
+	glUniform3f(lightPosLocation, 0.0f,0.0f,3.0f + myrect.light_z);
+	
+	int lightColorLocation = glGetUniformLocation(s_program, "lightColor");
 	glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
-	int objColorLocation = glGetUniformLocation(s_program, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+	int objColorLocation = glGetUniformLocation(s_program, "objectColor");
 	glUniform3f(objColorLocation, 0.0, 1.0, 0.0);
 
-	/*moveMatrix = glm::translate(moveMatrix, glm::vec3(0, 0, 0));
-	Ty = glm::rotate(Ty, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	Tx = glm::rotate(Tx, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = Tx * Ty;
+	model = init;
+	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	glBindVertexArray(vao[5]);
-	glDrawArrays(GL_LINES, 0, 6);*/
-
-	//조명
-	
-
-	//삼각형
-	//Rm = init, mo = init, Tx = init, Ty = init;
-	//moveMatrix = init;
-	//moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0f,0.0f,0.0f + myrect.light_z));
-	//Ty = glm::rotate(Ty, glm::radians(myrect.xangle + myrect.light_z), glm::vec3(0.0f, 1.0f, 0.0f));
-	//Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
-
-	//////사각형
-	//for (int i = 6; i < 12; ++i)
-	//{
-	//	glBindVertexArray(vao[i]);
-	//	float movey = myrect.hex_slied_y;
-	//	if (i == 6 || i == 11) //뒤 아래
-	//	{
-	//		model = Tx * Ty * moveMatrix * Ry;
-	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	//		glDrawArrays(GL_TRIANGLES, 0, 6);
-	//	}
-	//	switch (i)
-	//	{
-	//	case 7: //앞
-	//		Rx = glm::rotate(Rx, glm::radians(myrect.hex_front_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
-	//		Rm = glm::translate(Rm, glm::vec3(0.0f, 0.25f, 0.25f));
-	//		mo = glm::translate(mo, glm::vec3(0.0f, -0.25f, -0.25f));
-	//		model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
-	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	//		Rm = init, mo = init, Rx = init;
-	//		break;
-	//	case 8: //오
-	//		Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
-	//		model = Tx * Ty * moveMatrix * Ry * Rm;
-	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	//		Rm = init, mo = init, Rx = init;
-	//		break;
-	//	case 9: //왼
-	//		Rm = glm::translate(Rm, glm::vec3(0.0f, movey, 0.0f));
-	//		model = Tx * Ty * moveMatrix * Ry * Rm;
-	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	//		Rm = init, mo = init, Rx = init;
-	//		break;
-	//	case 10: //위
-	//		Rx = glm::rotate(Rx, glm::radians(myrect.hex_up_anglex), glm::vec3(1.0f, 0.0f, 0.0f));
-	//		Rm = glm::translate(Rm, glm::vec3(0.0f, -0.25f, 0.0f));
-	//		mo = glm::translate(mo, glm::vec3(0.0f, 0.25f, 0.0f));
-	//		model = Tx * Ty * moveMatrix * Ry * mo * Rx * Rm;
-	//		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	//		Rm = init, mo = init, Rx = init;
-	//		break;
-	//	}
-	//	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//}
+	glBindVertexArray(vao[12]);
+	for (int i = 0; i < Shpherindex; ++i)
+	{
+		glDrawArrays(GL_TRIANGLES, i * 3, 3);
+	}
 
 	model = init;
 	Rm = init, mo = init, Tx = init, Ty = init, Ry = init;
 	moveMatrix = init;
 	//moveMatrix = glm::translate(moveMatrix, glm::vec3(myrect.light_x, myrect.light_y, myrect.light_z));
-	moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0f,0.0f,3.0f));
+	moveMatrix = glm::translate(moveMatrix, glm::vec3(0.0f,0.0f,3.0f + myrect.light_z));
 	Ty = glm::rotate(Ty, glm::radians(myrect.xangle + myrect.light_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
 	Ry = init;
@@ -689,7 +718,10 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+
+	glUniform3f(lightPosLocation, 0.0f, 0.0f, 2.5f);
 	Ry = init;
+	Rm = init, mo = init, Tx = init, Ty = init;
 	if (myrect.change_rect)
 	{
 		moveMatrix = init;
@@ -751,11 +783,12 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	else
 	{
 		Rm = init, mo = init, Tx = init, Ty = init;
+		Ry = init;
 		moveMatrix = init;
 		moveMatrix = glm::translate(moveMatrix, glm::vec3(0, 0, 0));
 		Ty = glm::rotate(Ty, glm::radians(myrect.xangle), glm::vec3(0.0f, 1.0f, 0.0f));
 		Tx = glm::rotate(Tx, glm::radians(myrect.yangle), glm::vec3(1.0f, 0.0f, 0.0f));
-
+		Ry = glm::rotate(Ry, glm::radians(myrect.revolutiony), glm::vec3(0.0f, 1.0f, 0.0f));
 		//사각형
 		for (int i = 6; i < 12; ++i)
 		{
@@ -858,7 +891,7 @@ void make_fragmentShaders()
 	if (!result)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, errorLog);
-		std::cerr << "ERROR: vertex shader error\n" << errorLog << std::endl;
+		std::cerr << "ERROR: fragment shader error\n" << errorLog << std::endl;
 		return;
 	}
 
@@ -887,10 +920,10 @@ GLuint make_shaderProgram()
 void InitBuffer()
 {
 	//외부 움직이는 삼각형
-	glGenVertexArrays(13, vao);
+	glGenVertexArrays(14, vao);
 	glBindVertexArray(vao[0]); //삼각뿔 앞
 
-	glGenBuffers(26, vbo);
+	glGenBuffers(27, vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.tri_pos_front), myrect.tri_pos_front, GL_STATIC_DRAW);
@@ -1012,19 +1045,14 @@ void InitBuffer()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(vao[12]); //조명
+
+	glBindVertexArray(vao[12]);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[24]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	
+	glBufferData(GL_ARRAY_BUFFER, sizeof(SphereObj), SphereObj, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo[25]);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(myrect.hex_down_color), myrect.hex_down_color, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-
-	//glUseProgram(s_program);
-	
 }
 
 void InitShader()
@@ -1157,7 +1185,20 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		myrect.yangle += 3.0f;
 		break;
 	case '5':
-		myrect.light_angle += 0.01f;
+		myrect.light_angle += 3.0f;
+		break;
+	case 'm':
+		myrect.lighton = !myrect.lighton;
+		int lighton = glGetUniformLocation(s_program, "light_on");
+
+		if (myrect.lighton)
+		{
+			glUniform3f(lighton, 0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			glUniform3f(lighton, 1.0f, 1.0f, 1.0f);
+		}
 		break;
 	}
 	glutPostRedisplay();

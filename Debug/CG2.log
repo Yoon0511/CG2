@@ -1,20 +1,16 @@
-﻿  024.cpp
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(26,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Vectex' 왼쪽은 무시됩니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(29,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Rectpos' 왼쪽은 무시됩니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(50,28): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(166,3): warning C4305: '초기화 중': 'double'에서 'const GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(183,3): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(185,82): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(186,83): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(187,82): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(188,83): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(87,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(376,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(398,12): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(399,12): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(470,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(471,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(494,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(1040,9): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\024.cpp(1228,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  025.cpp
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(26,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Vectex' 왼쪽은 무시됩니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(29,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'my_Rectpos' 왼쪽은 무시됩니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(50,28): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(63,3): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(86,3): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(89,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(95,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(101,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(141,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(142,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(171,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(160,17): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(361,9): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\CG2\025.cpp(404,16): warning C4244: '인수': 'float'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   CG2.vcxproj -> C:\KPU\KPU_COMPUTER_GRAPHIC\CG2\Debug\CG2.exe
